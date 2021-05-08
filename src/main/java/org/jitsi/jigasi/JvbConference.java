@@ -2196,6 +2196,7 @@ public class JvbConference
 
                     if (stream instanceof AudioMediaStreamImpl)
                     {
+                        logStats((AudioMediaStreamImpl) stream, "JVB");
                         try
                         {
                             // if there is no activity on the audio channel this means there is a problem
@@ -2215,6 +2216,51 @@ public class JvbConference
                 {
                     dropCall();
                 }
+            }
+
+            peer = null;
+            if (gatewaySession != null && gatewaySession instanceof SipGatewaySession)
+            {
+                Call sipCall = ((SipGatewaySession)gatewaySession).getSipCall();
+                if (sipCall != null)
+                {
+                    Iterator<? extends CallPeer> iter = sipCall.getCallPeers();
+                    if (iter != null)
+                    {
+                        peer = iter.next();
+                    }
+                }
+            }
+
+            if (peer != null && peer instanceof MediaAwareCallPeer)
+            {
+                MediaAwareCallPeer peerMedia = (MediaAwareCallPeer) peer;
+
+                CallPeerMediaHandler mediaHandler = peerMedia.getMediaHandler();
+                if (mediaHandler != null)
+                {
+                    MediaStream stream = mediaHandler.getStream(MediaType.AUDIO);
+                    if (stream != null && stream instanceof AudioMediaStreamImpl)
+                    {
+                        logStats((AudioMediaStreamImpl) stream, "SIP");
+                    }
+                }
+            }
+        }
+
+        private void logStats(AudioMediaStreamImpl audioStream, String callType)
+        {
+            try
+            {
+                logger.warn(callContext +
+                    " ICC/" + callType + " LastInputActivityTime: " +
+                    audioStream.getLastInputActivityTime());
+                logger.warn(callContext +
+                    " ICC/" + callType + " SendingBitrate: " +
+                    audioStream.getMediaStreamStats().getSendingBitrate());
+            }
+            catch(IOException e)
+            {
             }
         }
 
