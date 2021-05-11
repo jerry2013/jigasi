@@ -2222,10 +2222,10 @@ public class JvbConference
             if (gatewaySession != null && gatewaySession instanceof SipGatewaySession)
             {
                 Call sipCall = ((SipGatewaySession)gatewaySession).getSipCall();
-                if (sipCall != null)
+                if (sipCall != null && sipCall.getCallState() == CallState.CALL_IN_PROGRESS)
                 {
                     Iterator<? extends CallPeer> iter = sipCall.getCallPeers();
-                    if (iter != null)
+                    if (iter != null && iter.hasNext())
                     {
                         peer = iter.next();
                     }
