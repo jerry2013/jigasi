@@ -2242,26 +2242,33 @@ public class JvbConference
                     MediaStream stream = mediaHandler.getStream(MediaType.AUDIO);
                     if (stream != null && stream instanceof AudioMediaStreamImpl)
                     {
-                        logStats((AudioMediaStreamImpl) stream, "SIP");
+                        long sendingBitrate = logStats((AudioMediaStreamImpl) stream, "SIP");
+                        if (sendingBitrate == 218) {
+                            // This instance has stopped working (media stopped flowing)
+                            JigasiBundleActivator.enableGracefulShutdownMode();
+                            dropCall();
+                        }
                     }
                 }
             }
         }
 
-        private void logStats(AudioMediaStreamImpl audioStream, String callType)
+        private long logStats(AudioMediaStreamImpl audioStream, String callType)
         {
+            long sendingBitrate = 0;
             try
             {
                 logger.warn(callContext +
                     " ICC/" + callType + " LastInputActivityTime: " +
                     audioStream.getLastInputActivityTime());
+                sendingBitrate = audioStream.getMediaStreamStats().getSendingBitrate();
                 logger.warn(callContext +
-                    " ICC/" + callType + " SendingBitrate: " +
-                    audioStream.getMediaStreamStats().getSendingBitrate());
+                    " ICC/" + callType + " SendingBitrate: " + sendingBitrate);
             }
             catch(IOException e)
             {
             }
+            return sendingBitrate;
         }
 
         /**
